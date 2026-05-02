@@ -17,6 +17,8 @@ struct Cli {
 enum Commands {
     /// Print the current time
     Time(commands::time::TimeArgs),
+    /// Start the MCP stdio server
+    Mcp,
 }
 
 fn main() {
@@ -28,5 +30,6 @@ fn main() {
 
     match args.command {
         Commands::Time(time_args) => commands::time::run(&time_args),
+        Commands::Mcp => commands::mcp::run(),
     }
 }
