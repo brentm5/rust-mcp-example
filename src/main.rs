@@ -1,5 +1,6 @@
-use chrono::{Local, Utc};
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
+
+mod commands;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -15,21 +16,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Print the current time
-    Time(TimeArgs),
-}
-
-#[derive(Args, Debug)]
-struct TimeArgs {
-    /// Also print UTC time
-    #[arg(long)]
-    utc: bool,
-}
-
-fn format_time<Tz: chrono::TimeZone>(dt: chrono::DateTime<Tz>) -> String
-where
-    Tz::Offset: std::fmt::Display,
-{
-    dt.format("%A %B %-d %Y %I:%M %p").to_string()
+    Time(commands::time::TimeArgs),
 }
 
 fn main() {
@@ -40,11 +27,6 @@ fn main() {
     }
 
     match args.command {
-        Commands::Time(time_args) => {
-            println!("{}", format_time(Local::now()));
-            if time_args.utc {
-                println!("UTC: {}", format_time(Utc::now()));
-            }
-        }
+        Commands::Time(time_args) => commands::time::run(&time_args),
     }
 }
