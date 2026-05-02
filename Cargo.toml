@@ -1,0 +1,15 @@
+[package]
+name = "rust-mcp-example"
+version = "0.1.0"
+edition = "2024"
+description = "An example Rust project using MCP (Modular Cargo Package) structure."
+authors = ["Brent Montague <@brentm5>"]
+readme = "README.md"
+license = "Apache-2.0"
+
+[[bin]]
+name = "rust-mcp-example"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.6.1", features = ["derive"] }
