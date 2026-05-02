@@ -510,6 +510,9 @@ dependencies = [
  "chrono",
  "clap",
  "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

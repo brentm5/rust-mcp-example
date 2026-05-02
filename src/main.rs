@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 mod commands;
+mod mcp_tools;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]

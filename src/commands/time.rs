@@ -3,12 +3,12 @@ use clap::Args;
 
 #[derive(Args, Debug)]
 pub struct TimeArgs {
-    /// Also print UTC time
+    /// Print UTC time instead of local time
     #[arg(long)]
     utc: bool,
 }
 
-fn format_time<Tz: chrono::TimeZone>(dt: chrono::DateTime<Tz>) -> String
+pub fn format_time<Tz: chrono::TimeZone>(dt: chrono::DateTime<Tz>) -> String
 where
     Tz::Offset: std::fmt::Display,
 {
@@ -16,8 +16,9 @@ where
 }
 
 pub fn run(args: &TimeArgs) {
-    println!("{}", format_time(Local::now()));
     if args.utc {
-        println!("UTC: {}", format_time(Utc::now()));
+        println!("{}", format_time(Utc::now()));
+    } else {
+        println!("{}", format_time(Local::now()));
     }
 }

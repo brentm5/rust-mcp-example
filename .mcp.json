@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rust-mcp-example": {
+      "command": "cargo",
+      "args": ["run", "--", "mcp"],
+      "cwd": "/Users/brentm5/code/rust-mcp-example"
+    }
+  }
+}
