@@ -1,19 +1,32 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
+
+mod commands;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
-  #[arg(short, long)]
-  debug: bool,
+struct Cli {
+    /// Enable debug output
+    #[arg(short, long)]
+    debug: bool,
+
+    #[command(subcommand)]
+    command: Commands,
 }
 
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Print the current time
+    Time(commands::time::TimeArgs),
+}
 
 fn main() {
-  let args = Args::parse();
+    let args = Cli::parse();
 
-  if args.debug {
-    println!("Debug mode is on");
-  } else {
-    println!("Debug mode is off");
-  }
+    if args.debug {
+        println!("Debug mode is on");
+    }
+
+    match args.command {
+        Commands::Time(time_args) => commands::time::run(&time_args),
+    }
 }
