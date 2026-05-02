@@ -36,13 +36,13 @@ Options:
 
 **Without `--utc`:**
 ```
-12:30 PM on Saturday, May 2nd
+Saturday May 2 2026 05:30 PM
 ```
 
 **With `--utc`:**
 ```
-12:30 PM on Saturday, May 2nd
-UTC: 7:30 PM on Saturday, May 2nd
+Saturday May 2 2026 05:30 PM
+UTC: Saturday May 2 2026 09:30 PM
 ```
 
 ## Dependencies
@@ -59,8 +59,7 @@ chrono = { version = "0.4", features = ["clock"] }
 - `Args` struct holds `--debug` and a `Commands` enum via `#[command(subcommand)]`
 - `Commands` is an enum with a single variant `Time(TimeArgs)`
 - `TimeArgs` holds `--utc: bool`
-- Format string: `"%-I:%M %p on %A, %B %-d"` — produces `12:30 PM on Saturday, May 2nd` (no leading zero on hour/day; chrono doesn't support ordinal suffixes natively, so the day will be numeric without `st/nd/rd/th`)
-- Ordinal suffix (1st, 2nd, 3rd) is not supported natively by chrono's format strings; a small helper function will compute the suffix and interpolate it into the output string
+- Format string: `"%A %B %-d %Y %I:%M %p"` — produces `Saturday May 2 2026 05:30 PM` (no leading zero on day; leading zero on hour is fine)
 
 ## Out of Scope
 
