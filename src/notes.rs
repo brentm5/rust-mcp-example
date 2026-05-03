@@ -1,3 +1,4 @@
+#![allow(unused_imports, dead_code, unused)]
 use std::path::Path;
 use std::sync::Arc;
 
@@ -32,19 +33,19 @@ pub struct NoteStore {
 }
 
 impl NoteStore {
-    pub async fn open(db_path: &Path) -> Result<Self> {
+    pub async fn open(_db_path: &Path) -> Result<Self> {
         todo!()
     }
 
-    pub async fn save(&self, name: &str, message: &str) -> Result<Note> {
+    pub async fn save(&self, _name: &str, _message: &str) -> Result<Note> {
         todo!()
     }
 
-    pub async fn retrieve(&self, id: &str) -> Result<Option<Note>> {
+    pub async fn retrieve(&self, _id: &str) -> Result<Option<Note>> {
         todo!()
     }
 
-    pub async fn search(&self, query: &str) -> Result<Vec<Note>> {
+    pub async fn search(&self, _query: &str) -> Result<Vec<Note>> {
         todo!()
     }
 
