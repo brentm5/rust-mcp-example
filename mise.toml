@@ -1,2 +1,5 @@
 [tools]
 rust = "1.88.0"
+
+[task_config]
+includes = ["tasks.toml"]
