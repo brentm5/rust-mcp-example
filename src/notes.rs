@@ -82,8 +82,18 @@ impl NoteStore {
         })
     }
 
-    pub async fn retrieve(&self, _id: &str) -> Result<Option<Note>> {
-        todo!()
+    pub async fn retrieve(&self, id: &str) -> Result<Option<Note>> {
+        let filter = format!("id = '{}'", id.replace('\'', "''"));
+        let batches: Vec<RecordBatch> = self
+            .table
+            .query()
+            .only_if(&filter)
+            .execute()
+            .await?
+            .try_collect()
+            .await?;
+        let notes = batches_to_notes(batches)?;
+        Ok(notes.into_iter().next())
     }
 
     pub async fn search(&self, _query: &str) -> Result<Vec<Note>> {
@@ -140,6 +150,31 @@ mod tests {
             assert_eq!(note.name, "test note");
             assert_eq!(note.message, "hello world");
             assert_eq!(note.id.len(), 36);
+        });
+    }
+
+    #[test]
+    fn test_retrieve_by_id() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            let saved = store.save("my note", "content here").await.unwrap();
+            let found = store.retrieve(&saved.id).await.unwrap();
+            assert!(found.is_some());
+            let note = found.unwrap();
+            assert_eq!(note.id, saved.id);
+            assert_eq!(note.name, "my note");
+            assert_eq!(note.message, "content here");
+        });
+    }
+
+    #[test]
+    fn test_retrieve_missing_id_returns_none() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            let result = store.retrieve("nonexistent-id").await.unwrap();
+            assert!(result.is_none());
         });
     }
 }
