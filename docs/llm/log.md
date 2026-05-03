@@ -18,3 +18,7 @@ Bootstrapped wiki from full project scan. Sources ingested:
 - `docs/llm/llm-wiki.md`
 
 Pages created: overview, command-module-pattern, dispatch-flow, time (command), cli-as-source-of-truth, mcp, clap-derive-api, ci, toolchain, index.
+
+## 2026-05-03 — sys_info command and MCP tool
+
+Added `sys-info` CLI subcommand and `sys_info` MCP tool. Returns hostname, OS, kernel version, architecture, CPU brand + core count, total RAM, and current user. Uses `sysinfo = "0.33"` crate. Shared `SysInfoData` struct + pure `format_sys_info()` function used by both CLI and MCP. Tests assert exact output using a constructed `SysInfoData` — no system calls in tests.
