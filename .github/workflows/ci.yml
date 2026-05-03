@@ -19,9 +19,6 @@ jobs:
       - name: Install Rust toolchain
         run: rustup toolchain install
 
-      - name: Install Rust toolchain components
-        run: rustup component add clippy rust-analyzer rust-src
-
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
