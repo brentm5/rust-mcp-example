@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 mod commands;
 mod mcp_tools;
+mod notes;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
