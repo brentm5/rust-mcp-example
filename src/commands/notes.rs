@@ -4,16 +4,6 @@ use clap::{Args, Subcommand};
 
 use crate::notes::NoteStore;
 
-fn default_db_path() -> PathBuf {
-    let mut p = dirs::state_dir().unwrap_or_else(|| PathBuf::from(".local/state"));
-    p.push("rust-mcp-example");
-    p
-}
-
-fn format_note(note: &crate::notes::Note) -> String {
-    format!("id:      {}\nname:    {}\nmessage: {}", note.id, note.name, note.message)
-}
-
 #[derive(Args, Debug)]
 pub struct NotesArgs {
     /// Override the database directory (default: ~/.local/state/rust-mcp-example)
@@ -57,7 +47,7 @@ pub struct SearchArgs {
 }
 
 pub fn run(args: &NotesArgs) {
-    let db_path = args.db_path.clone().unwrap_or_else(default_db_path);
+    let db_path = args.db_path.clone().unwrap_or_else(crate::notes::default_db_path);
     let rt = tokio::runtime::Runtime::new().expect("failed to build tokio runtime");
     rt.block_on(async {
         let store = match NoteStore::open(&db_path).await {
@@ -76,7 +66,7 @@ pub fn run(args: &NotesArgs) {
                 }
             },
             NotesCommands::Retrieve(a) => match store.retrieve(&a.id).await {
-                Ok(Some(note)) => println!("{}", format_note(&note)),
+                Ok(Some(note)) => println!("{note}"),
                 Ok(None) => println!("not found"),
                 Err(e) => {
                     eprintln!("error: {e}");
@@ -87,7 +77,7 @@ pub fn run(args: &NotesArgs) {
                 Ok(notes) if notes.is_empty() => println!("no results"),
                 Ok(notes) => {
                     for note in &notes {
-                        println!("{}\n---", format_note(note));
+                        println!("{note}\n---");
                     }
                 }
                 Err(e) => {
@@ -99,7 +89,7 @@ pub fn run(args: &NotesArgs) {
                 Ok(notes) if notes.is_empty() => println!("no notes"),
                 Ok(notes) => {
                     for note in &notes {
-                        println!("{}\n---", format_note(note));
+                        println!("{note}\n---");
                     }
                 }
                 Err(e) => {

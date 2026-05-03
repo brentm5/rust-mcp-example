@@ -23,10 +23,7 @@ pub fn definition() -> Tool {
 
 pub async fn call(store: &Arc<NoteStore>, args: &Args) -> CallToolResult {
     match store.retrieve(&args.id).await {
-        Ok(Some(note)) => CallToolResult::success(vec![Content::text(format!(
-            "id:      {}\nname:    {}\nmessage: {}",
-            note.id, note.name, note.message
-        ))]),
+        Ok(Some(note)) => CallToolResult::success(vec![Content::text(note.to_string())]),
         Ok(None) => CallToolResult::success(vec![Content::text("not found")]),
         Err(e) => CallToolResult::error(vec![Content::text(format!("error: {e}"))]),
     }

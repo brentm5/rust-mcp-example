@@ -26,7 +26,7 @@ pub async fn call(store: &Arc<NoteStore>) -> CallToolResult {
         Ok(notes) => {
             let text = notes
                 .iter()
-                .map(|n| format!("id:      {}\nname:    {}\nmessage: {}", n.id, n.name, n.message))
+                .map(|n| n.to_string())
                 .collect::<Vec<_>>()
                 .join("\n---\n");
             CallToolResult::success(vec![Content::text(text)])

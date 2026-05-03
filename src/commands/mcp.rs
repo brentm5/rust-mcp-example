@@ -110,12 +110,7 @@ pub fn run() {
     let rt = tokio::runtime::Runtime::new().expect("failed to build tokio runtime");
     if let Err(e) = rt.block_on(async {
         eprintln!("mcp server starting on stdio");
-        let db_path = {
-            let mut p = dirs::state_dir()
-                .unwrap_or_else(|| std::path::PathBuf::from(".local/state"));
-            p.push("rust-mcp-example");
-            p
-        };
+        let db_path = crate::notes::default_db_path();
         let notes = Arc::new(crate::notes::NoteStore::open(&db_path).await?);
         // serve() completes the MCP initialize handshake and starts the message loop
         // in a background task, returning a handle to it.

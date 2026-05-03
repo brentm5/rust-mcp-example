@@ -1,5 +1,4 @@
-#![allow(unused_imports, dead_code, unused)]
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use arrow_array::{RecordBatch, RecordBatchIterator, StringArray};
@@ -8,16 +7,28 @@ use futures::TryStreamExt;
 use lancedb::index::scalar::FtsIndexBuilder;
 use lancedb::index::Index;
 use lancedb::query::{ExecutableQuery, QueryBase};
-use lancedb::{Connection, Table};
+use lancedb::Table;
 use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+pub fn default_db_path() -> PathBuf {
+    let mut p = dirs::state_dir().unwrap_or_else(|| PathBuf::from(".local/state"));
+    p.push("rust-mcp-example");
+    p
+}
 
 #[derive(Debug, Clone)]
 pub struct Note {
     pub id: String,
     pub name: String,
     pub message: String,
+}
+
+impl std::fmt::Display for Note {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "id:      {}\nname:    {}\nmessage: {}", self.id, self.name, self.message)
+    }
 }
 
 fn note_schema() -> Arc<Schema> {
@@ -35,7 +46,7 @@ pub struct NoteStore {
 impl NoteStore {
     pub async fn open(db_path: &Path) -> Result<Self> {
         std::fs::create_dir_all(db_path)?;
-        let conn: Connection = lancedb::connect(db_path.to_str().ok_or("invalid path")?)
+        let conn = lancedb::connect(db_path.to_str().ok_or("invalid path")?)
             .execute()
             .await?;
 
