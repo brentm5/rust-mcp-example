@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 cargo build                          # debug build
 cargo build --release                # release build
 cargo run -- <subcommand> [args]     # run the CLI
+cargo run -- sys-info              # print system information
 cargo clippy -- -D warnings          # lint (CI enforces zero warnings)
 cargo test                           # run tests
 cargo test <test_name>               # run a single test
