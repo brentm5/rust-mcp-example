@@ -1,0 +1,27 @@
+[clean]
+description = 'Clean build artifacts'
+run = 'cargo clean'
+
+[release]
+description = 'Release the project'
+run = 'cargo build --release'
+
+[ci]
+depends = ["lint", "build", "test"]
+description = "Run all CI checks"
+
+[lint]
+run = "cargo clippy -- -D warnings"
+description = "Lint the project"
+
+[build]
+depends = ["lint"]
+alias = "b"
+run = "cargo build --all-features"
+description = "Build the project"
+
+[test]
+depends = ["build"]
+alias = 't'
+description = "run all tests"
+run = "cargo test --all-features"

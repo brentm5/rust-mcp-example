@@ -35,8 +35,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Lint (clippy)
-        run: cargo clippy --target aarch64-apple-darwin -- -D warnings
-
-      - name: Build
-        run: cargo build --release --target aarch64-apple-darwin
+      - name: CI
+        run: mise run ci
