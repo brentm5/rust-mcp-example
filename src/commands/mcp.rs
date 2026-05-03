@@ -37,7 +37,10 @@ impl ServerHandler for McpServer {
         std::future::ready(Ok(ListToolsResult {
             tools: vec![
                 mcp_tools::get_time::definition(),
+                mcp_tools::notes_list::definition(),
+                mcp_tools::notes_retrieve::definition(),
                 mcp_tools::notes_save::definition(),
+                mcp_tools::notes_search::definition(),
                 mcp_tools::sys_info::definition(),
             ],
             next_cursor: None,
@@ -68,6 +71,33 @@ impl ServerHandler for McpServer {
                             ErrorData::invalid_params("missing or invalid arguments", None)
                         })?;
                     Ok(mcp_tools::notes_save::call(&notes, &args).await)
+                }
+                mcp_tools::notes_retrieve::NAME => {
+                    let args: mcp_tools::notes_retrieve::Args = request
+                        .arguments
+                        .as_ref()
+                        .and_then(|v| {
+                            serde_json::from_value(serde_json::Value::Object(v.clone())).ok()
+                        })
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params("missing or invalid arguments", None)
+                        })?;
+                    Ok(mcp_tools::notes_retrieve::call(&notes, &args).await)
+                }
+                mcp_tools::notes_search::NAME => {
+                    let args: mcp_tools::notes_search::Args = request
+                        .arguments
+                        .as_ref()
+                        .and_then(|v| {
+                            serde_json::from_value(serde_json::Value::Object(v.clone())).ok()
+                        })
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params("missing or invalid arguments", None)
+                        })?;
+                    Ok(mcp_tools::notes_search::call(&notes, &args).await)
+                }
+                mcp_tools::notes_list::NAME => {
+                    Ok(mcp_tools::notes_list::call(&notes).await)
                 }
                 _ => Err(ErrorData::invalid_params("unknown tool", None)),
             }
