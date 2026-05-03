@@ -4,7 +4,6 @@ use sysinfo::System;
 #[derive(Args, Debug)]
 pub struct SysInfoArgs {}
 
-#[allow(dead_code)]
 pub struct SysInfoData {
     pub hostname: String,
     pub os: String,
@@ -16,7 +15,6 @@ pub struct SysInfoData {
     pub user: String,
 }
 
-#[allow(dead_code)]
 pub fn collect_sys_info() -> SysInfoData {
     let mut sys = System::new_all();
     sys.refresh_all();
@@ -39,7 +37,6 @@ pub fn collect_sys_info() -> SysInfoData {
     SysInfoData { hostname, os, kernel, arch, cpu_brand, cpu_count, ram_gb, user }
 }
 
-#[allow(dead_code)]
 pub fn format_sys_info(data: &SysInfoData) -> String {
     format!(
         "Hostname:   {}\nOS:         {}\nKernel:     {}\nArch:       {}\nCPU:        {} ({} cores)\nRAM:        {} GB\nUser:       {}",
@@ -54,7 +51,6 @@ pub fn format_sys_info(data: &SysInfoData) -> String {
     )
 }
 
-#[allow(dead_code)]
 pub fn run(_args: &SysInfoArgs) {
     println!("{}", format_sys_info(&collect_sys_info()));
 }

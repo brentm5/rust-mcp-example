@@ -18,6 +18,8 @@ struct Cli {
 enum Commands {
     /// Print the current time
     Time(commands::time::TimeArgs),
+    /// Print system information
+    SysInfo(commands::sys_info::SysInfoArgs),
     /// Start the MCP stdio server
     Mcp,
 }
@@ -31,6 +33,7 @@ fn main() {
 
     match args.command {
         Commands::Time(time_args) => commands::time::run(&time_args),
+        Commands::SysInfo(sys_info_args) => commands::sys_info::run(&sys_info_args),
         Commands::Mcp => commands::mcp::run(),
     }
 }
