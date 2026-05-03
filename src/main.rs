@@ -23,6 +23,8 @@ enum Commands {
     SysInfo(commands::sys_info::SysInfoArgs),
     /// Start the MCP stdio server
     Mcp,
+    /// Manage notes
+    Notes(commands::notes::NotesArgs),
 }
 
 fn main() {
@@ -36,5 +38,6 @@ fn main() {
         Commands::Time(time_args) => commands::time::run(&time_args),
         Commands::SysInfo(sys_info_args) => commands::sys_info::run(&sys_info_args),
         Commands::Mcp => commands::mcp::run(),
+        Commands::Notes(notes_args) => commands::notes::run(&notes_args),
     }
 }
