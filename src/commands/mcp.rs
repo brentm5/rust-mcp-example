@@ -30,7 +30,10 @@ impl ServerHandler for McpServer {
         _context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<ListToolsResult, ErrorData>> + Send {
         std::future::ready(Ok(ListToolsResult {
-            tools: vec![mcp_tools::get_time::definition()],
+            tools: vec![
+                mcp_tools::get_time::definition(),
+                mcp_tools::sys_info::definition(),
+            ],
             next_cursor: None,
             meta: None,
         }))
@@ -43,6 +46,7 @@ impl ServerHandler for McpServer {
     ) -> impl std::future::Future<Output = Result<CallToolResult, ErrorData>> + Send {
         let result = match request.name.as_ref() {
             mcp_tools::get_time::NAME => Ok(mcp_tools::get_time::call(request.arguments.as_ref())),
+            mcp_tools::sys_info::NAME => Ok(mcp_tools::sys_info::call()),
             _ => Err(ErrorData::invalid_params("unknown tool", None)),
         };
         std::future::ready(result)
