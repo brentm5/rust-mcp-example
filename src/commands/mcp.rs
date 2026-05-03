@@ -1,0 +1,69 @@
+use rmcp::{
+    ServerHandler, ServiceExt,
+    model::{
+        CallToolRequestParams, CallToolResult, ErrorData, ListToolsResult, PaginatedRequestParams,
+        ServerCapabilities, ServerInfo, ToolsCapability,
+    },
+    service::RequestContext,
+    transport::stdio,
+    RoleServer,
+};
+
+use crate::mcp_tools;
+
+// Clone is required by rmcp — the SDK clones the handler for each concurrent request.
+#[derive(Clone)]
+pub struct McpServer;
+
+impl ServerHandler for McpServer {
+    // Advertise capabilities during the MCP initialize handshake.
+    // Without tools: Some(...), MCP hosts won't call tools/list.
+    fn get_info(&self) -> ServerInfo {
+        let mut capabilities = ServerCapabilities::default();
+        capabilities.tools = Some(ToolsCapability { list_changed: None });
+        ServerInfo::new(capabilities)
+    }
+
+    fn list_tools(
+        &self,
+        _request: Option<PaginatedRequestParams>,
+        _context: RequestContext<RoleServer>,
+    ) -> impl std::future::Future<Output = Result<ListToolsResult, ErrorData>> + Send {
+        std::future::ready(Ok(ListToolsResult {
+            tools: vec![mcp_tools::get_time::definition()],
+            next_cursor: None,
+            meta: None,
+        }))
+    }
+
+    fn call_tool(
+        &self,
+        request: CallToolRequestParams,
+        _context: RequestContext<RoleServer>,
+    ) -> impl std::future::Future<Output = Result<CallToolResult, ErrorData>> + Send {
+        let result = match request.name.as_ref() {
+            mcp_tools::get_time::NAME => Ok(mcp_tools::get_time::call(request.arguments.as_ref())),
+            _ => Err(ErrorData::invalid_params("unknown tool", None)),
+        };
+        std::future::ready(result)
+    }
+}
+
+pub fn run() {
+    // main() is synchronous, so we build a tokio runtime here to drive the async MCP server.
+    let rt = tokio::runtime::Runtime::new().expect("failed to build tokio runtime");
+    if let Err(e) = rt.block_on(async {
+        eprintln!("mcp server starting on stdio");
+        // serve() completes the MCP initialize handshake and starts the message loop
+        // in a background task, returning a handle to it.
+        let service = McpServer.serve(stdio()).await?;
+        eprintln!("mcp server ready");
+        // Block until the client disconnects (stdin closes).
+        service.waiting().await?;
+        eprintln!("mcp server stopped");
+        Ok::<_, Box<dyn std::error::Error>>(())
+    }) {
+        eprintln!("mcp server error: {e}");
+        std::process::exit(1);
+    }
+}
