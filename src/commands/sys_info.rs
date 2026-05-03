@@ -1,8 +1,10 @@
 use clap::Args;
+use sysinfo::System;
 
 #[derive(Args, Debug)]
 pub struct SysInfoArgs {}
 
+#[allow(dead_code)]
 pub struct SysInfoData {
     pub hostname: String,
     pub os: String,
@@ -14,10 +16,30 @@ pub struct SysInfoData {
     pub user: String,
 }
 
+#[allow(dead_code)]
 pub fn collect_sys_info() -> SysInfoData {
-    todo!()
+    let mut sys = System::new_all();
+    sys.refresh_all();
+
+    let hostname = System::host_name().unwrap_or_else(|| "unknown".into());
+    let os = System::long_os_version().unwrap_or_else(|| "unknown".into());
+    let kernel = System::kernel_version().unwrap_or_else(|| "unknown".into());
+    let arch = std::env::consts::ARCH.to_string();
+    let cpu_brand = sys
+        .cpus()
+        .first()
+        .map(|c| c.brand().to_string())
+        .unwrap_or_else(|| "unknown".into());
+    let cpu_count = sys.cpus().len();
+    let ram_gb = sys.total_memory() / 1_073_741_824; // bytes → GB
+    let user = std::env::var("USER")
+        .or_else(|_| std::env::var("USERNAME"))
+        .unwrap_or_else(|_| "unknown".into());
+
+    SysInfoData { hostname, os, kernel, arch, cpu_brand, cpu_count, ram_gb, user }
 }
 
+#[allow(dead_code)]
 pub fn format_sys_info(data: &SysInfoData) -> String {
     format!(
         "Hostname:   {}\nOS:         {}\nKernel:     {}\nArch:       {}\nCPU:        {} ({} cores)\nRAM:        {} GB\nUser:       {}",
@@ -32,8 +54,9 @@ pub fn format_sys_info(data: &SysInfoData) -> String {
     )
 }
 
+#[allow(dead_code)]
 pub fn run(_args: &SysInfoArgs) {
-    todo!()
+    println!("{}", format_sys_info(&collect_sys_info()));
 }
 
 #[cfg(test)]
