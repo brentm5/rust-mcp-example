@@ -96,12 +96,50 @@ impl NoteStore {
         Ok(notes.into_iter().next())
     }
 
-    pub async fn search(&self, _query: &str) -> Result<Vec<Note>> {
-        todo!()
+    pub async fn search(&self, query: &str) -> Result<Vec<Note>> {
+        use lancedb::index::scalar::FullTextSearchQuery;
+        use lancedb::table::OptimizeAction;
+
+        self.table.optimize(OptimizeAction::Index(Default::default())).await?;
+
+        // Search `message` column, then `name` column; merge results deduplicating by id.
+        let search_column = |col: &'static str| {
+            let tbl = &self.table;
+            let q = query.to_string();
+            async move {
+                let fts = FullTextSearchQuery::new(q)
+                    .limit(None)
+                    .with_column(col.to_string())?;
+                let batches: Vec<RecordBatch> = tbl
+                    .query()
+                    .full_text_search(fts)
+                    .execute()
+                    .await?
+                    .try_collect()
+                    .await?;
+                batches_to_notes(batches)
+            }
+        };
+
+        let mut seen_ids = std::collections::HashSet::new();
+        let mut results = Vec::new();
+        for note in search_column("message").await?.into_iter().chain(search_column("name").await?) {
+            if seen_ids.insert(note.id.clone()) {
+                results.push(note);
+            }
+        }
+        Ok(results)
     }
 
     pub async fn list(&self) -> Result<Vec<Note>> {
-        todo!()
+        let batches: Vec<RecordBatch> = self
+            .table
+            .query()
+            .execute()
+            .await?
+            .try_collect()
+            .await?;
+        batches_to_notes(batches)
     }
 }
 
@@ -175,6 +213,31 @@ mod tests {
             let store = NoteStore::open(dir.path()).await.unwrap();
             let result = store.retrieve("nonexistent-id").await.unwrap();
             assert!(result.is_none());
+        });
+    }
+
+    #[test]
+    fn test_search_returns_matching_notes() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            store.save("shopping list", "buy milk and eggs").await.unwrap();
+            store.save("work todo", "finish the report").await.unwrap();
+            let results = store.search("milk").await.unwrap();
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0].name, "shopping list");
+        });
+    }
+
+    #[test]
+    fn test_list_returns_all_notes() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            store.save("note one", "first").await.unwrap();
+            store.save("note two", "second").await.unwrap();
+            let all = store.list().await.unwrap();
+            assert_eq!(all.len(), 2);
         });
     }
 }
