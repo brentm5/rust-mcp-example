@@ -38,17 +38,16 @@ pub fn collect_sys_info() -> SysInfoData {
 }
 
 pub fn format_sys_info(data: &SysInfoData) -> String {
-    format!(
-        "Hostname:   {}\nOS:         {}\nKernel:     {}\nArch:       {}\nCPU:        {} ({} cores)\nRAM:        {} GB\nUser:       {}",
-        data.hostname,
-        data.os,
-        data.kernel,
-        data.arch,
-        data.cpu_brand,
-        data.cpu_count,
-        data.ram_gb,
-        data.user,
-    )
+    [
+        format!("Hostname:   {}", data.hostname),
+        format!("OS:         {}", data.os),
+        format!("Kernel:     {}", data.kernel),
+        format!("Arch:       {}", data.arch),
+        format!("CPU:        {} ({} cores)", data.cpu_brand, data.cpu_count),
+        format!("RAM:        {} GB", data.ram_gb),
+        format!("User:       {}", data.user),
+    ]
+    .join("\n")
 }
 
 pub fn run(_args: &SysInfoArgs) {
