@@ -9,6 +9,11 @@ cargo build                          # debug build
 cargo build --release                # release build
 cargo run -- <subcommand> [args]     # run the CLI
 cargo run -- sys-info              # print system information
+cargo run -- notes save --name "title" --message "content"   # save a note, prints UUID
+cargo run -- notes retrieve --id <uuid>                       # retrieve note by id
+cargo run -- notes search --query <keyword>                   # full-text search
+cargo run -- notes list                                       # list all notes
+cargo run -- notes --db-path /custom/path list                # override db location
 cargo clippy -- -D warnings          # lint (CI enforces zero warnings)
 cargo test                           # run tests
 cargo test <test_name>               # run a single test
@@ -29,9 +34,11 @@ The goal of this project is to expose CLI subcommands as MCP tool calls — CLI 
 2. Add `pub mod <name>;` to `src/commands/mod.rs`
 3. Add a variant to `Commands` and a match arm in `main()`
 
+**Notes subcommand:** The `notes` subcommand uses `NoteStore` from `src/notes.rs` which wraps a LanceDB database stored at `~/.local/state/rust-mcp-example/`.
+
 ## Toolchain
 
-Rust 1.85.0 (pinned via `rust-toolchain.toml` and `mise.toml`). Uses Rust 2024 edition.
+Rust 1.88.0 (pinned via `rust-toolchain.toml` and `mise.toml`). Uses Rust 2024 edition.
 
 ## Maintenance
 
