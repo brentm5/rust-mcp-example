@@ -95,29 +95,6 @@ impl NoteStore {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    fn rt() -> tokio::runtime::Runtime {
-        tokio::runtime::Runtime::new().unwrap()
-    }
-
-    #[test]
-    fn test_save_returns_note_with_uuid() {
-        rt().block_on(async {
-            let dir = tempdir().unwrap();
-            let store = NoteStore::open(dir.path()).await.unwrap();
-            let note = store.save("test note", "hello world").await.unwrap();
-            assert!(!note.id.is_empty());
-            assert_eq!(note.name, "test note");
-            assert_eq!(note.message, "hello world");
-            assert_eq!(note.id.len(), 36);
-        });
-    }
-}
-
 fn batches_to_notes(batches: Vec<RecordBatch>) -> Result<Vec<Note>> {
     let mut notes = Vec::new();
     for batch in batches {
@@ -142,4 +119,27 @@ fn batches_to_notes(batches: Vec<RecordBatch>) -> Result<Vec<Note>> {
         }
     }
     Ok(notes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    fn rt() -> tokio::runtime::Runtime {
+        tokio::runtime::Runtime::new().unwrap()
+    }
+
+    #[test]
+    fn test_save_returns_note_with_uuid() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            let note = store.save("test note", "hello world").await.unwrap();
+            assert!(!note.id.is_empty());
+            assert_eq!(note.name, "test note");
+            assert_eq!(note.message, "hello world");
+            assert_eq!(note.id.len(), 36);
+        });
+    }
 }
