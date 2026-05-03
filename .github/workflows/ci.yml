@@ -32,5 +32,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Install protobuf
+        run: brew install protobuf
+
       - name: CI
         run: mise run ci
