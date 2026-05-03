@@ -1,5 +1,5 @@
 use clap::Args;
-use sysinfo::System;
+use sysinfo::{CpuRefreshKind, MemoryRefreshKind, RefreshKind, System};
 
 #[derive(Args, Debug)]
 pub struct SysInfoArgs {}
@@ -16,20 +16,20 @@ pub struct SysInfoData {
 }
 
 pub fn collect_sys_info() -> SysInfoData {
-    let mut sys = System::new_all();
-    sys.refresh_all();
+    let sys = System::new_with_specifics(
+        RefreshKind::nothing()
+            .with_cpu(CpuRefreshKind::nothing().with_cpu_usage())
+            .with_memory(MemoryRefreshKind::nothing().with_ram()),
+    );
 
     let hostname = System::host_name().unwrap_or_else(|| "unknown".into());
     let os = System::long_os_version().unwrap_or_else(|| "unknown".into());
     let kernel = System::kernel_version().unwrap_or_else(|| "unknown".into());
     let arch = std::env::consts::ARCH.to_string();
-    let cpu_brand = sys
-        .cpus()
-        .first()
-        .map(|c| c.brand().to_string())
-        .unwrap_or_else(|| "unknown".into());
-    let cpu_count = sys.cpus().len();
-    let ram_gb = sys.total_memory() / 1_073_741_824; // bytes → GB
+    let cpus = sys.cpus();
+    let cpu_brand = cpus.first().map(|c| c.brand().to_string()).unwrap_or_else(|| "unknown".into());
+    let cpu_count = cpus.len();
+    let ram_gb = sys.total_memory() / 1_073_741_824;
     let user = std::env::var("USER")
         .or_else(|_| std::env::var("USERNAME"))
         .unwrap_or_else(|_| "unknown".into());
