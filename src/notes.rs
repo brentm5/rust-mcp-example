@@ -33,12 +33,53 @@ pub struct NoteStore {
 }
 
 impl NoteStore {
-    pub async fn open(_db_path: &Path) -> Result<Self> {
-        todo!()
+    pub async fn open(db_path: &Path) -> Result<Self> {
+        std::fs::create_dir_all(db_path)?;
+        let conn: Connection = lancedb::connect(db_path.to_str().ok_or("invalid path")?)
+            .execute()
+            .await?;
+
+        let table = if conn
+            .table_names()
+            .execute()
+            .await?
+            .contains(&"notes".to_string())
+        {
+            conn.open_table("notes").execute().await?
+        } else {
+            let schema = note_schema();
+            let empty = RecordBatchIterator::new(std::iter::empty(), schema.clone());
+            let tbl = conn.create_table("notes", empty).execute().await?;
+            tbl.create_index(&["name"], Index::FTS(FtsIndexBuilder::default()))
+                .execute()
+                .await?;
+            tbl.create_index(&["message"], Index::FTS(FtsIndexBuilder::default()))
+                .execute()
+                .await?;
+            tbl
+        };
+
+        Ok(Self { table })
     }
 
-    pub async fn save(&self, _name: &str, _message: &str) -> Result<Note> {
-        todo!()
+    pub async fn save(&self, name: &str, message: &str) -> Result<Note> {
+        let id = Uuid::new_v4().to_string();
+        let schema = note_schema();
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(StringArray::from(vec![id.as_str()])),
+                Arc::new(StringArray::from(vec![name])),
+                Arc::new(StringArray::from(vec![message])),
+            ],
+        )?;
+        let reader = RecordBatchIterator::new(std::iter::once(Ok(batch)), schema);
+        self.table.add(reader).execute().await?;
+        Ok(Note {
+            id,
+            name: name.to_string(),
+            message: message.to_string(),
+        })
     }
 
     pub async fn retrieve(&self, _id: &str) -> Result<Option<Note>> {
@@ -51,6 +92,29 @@ impl NoteStore {
 
     pub async fn list(&self) -> Result<Vec<Note>> {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    fn rt() -> tokio::runtime::Runtime {
+        tokio::runtime::Runtime::new().unwrap()
+    }
+
+    #[test]
+    fn test_save_returns_note_with_uuid() {
+        rt().block_on(async {
+            let dir = tempdir().unwrap();
+            let store = NoteStore::open(dir.path()).await.unwrap();
+            let note = store.save("test note", "hello world").await.unwrap();
+            assert!(!note.id.is_empty());
+            assert_eq!(note.name, "test note");
+            assert_eq!(note.message, "hello world");
+            assert_eq!(note.id.len(), 36);
+        });
     }
 }
 
