@@ -14,8 +14,12 @@ description = "Run all CI checks"
 run = "cargo clippy -- -D warnings"
 description = "Lint the project"
 
+[style]
+run = "cargo fmt --check"
+description = "Check code style"
+
 [build]
-depends = ["lint"]
+depends = ["style", "lint"]
 alias = "b"
 run = "cargo build --all-features"
 description = "Build the project"
