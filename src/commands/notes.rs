@@ -47,7 +47,10 @@ pub struct SearchArgs {
 }
 
 pub fn run(args: &NotesArgs) {
-    let db_path = args.db_path.clone().unwrap_or_else(crate::notes::default_db_path);
+    let db_path = args
+        .db_path
+        .clone()
+        .unwrap_or_else(crate::notes::default_db_path);
     let rt = tokio::runtime::Runtime::new().expect("failed to build tokio runtime");
     rt.block_on(async {
         let store = match NoteStore::open(&db_path).await {

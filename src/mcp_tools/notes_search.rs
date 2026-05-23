@@ -23,9 +23,7 @@ pub fn definition() -> Tool {
 
 pub async fn call(store: &Arc<NoteStore>, args: &Args) -> CallToolResult {
     match store.search(&args.query).await {
-        Ok(notes) if notes.is_empty() => {
-            CallToolResult::success(vec![Content::text("no results")])
-        }
+        Ok(notes) if notes.is_empty() => CallToolResult::success(vec![Content::text("no results")]),
         Ok(notes) => {
             let text = notes
                 .iter()
