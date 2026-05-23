@@ -27,14 +27,26 @@ pub fn collect_sys_info() -> SysInfoData {
     let kernel = System::kernel_version().unwrap_or_else(|| "unknown".into());
     let arch = std::env::consts::ARCH.to_string();
     let cpus = sys.cpus();
-    let cpu_brand = cpus.first().map(|c| c.brand().to_string()).unwrap_or_else(|| "unknown".into());
+    let cpu_brand = cpus
+        .first()
+        .map(|c| c.brand().to_string())
+        .unwrap_or_else(|| "unknown".into());
     let cpu_count = cpus.len();
     let ram_gb = sys.total_memory() / 1_073_741_824;
     let user = std::env::var("USER")
         .or_else(|_| std::env::var("USERNAME"))
         .unwrap_or_else(|_| "unknown".into());
 
-    SysInfoData { hostname, os, kernel, arch, cpu_brand, cpu_count, ram_gb, user }
+    SysInfoData {
+        hostname,
+        os,
+        kernel,
+        arch,
+        cpu_brand,
+        cpu_count,
+        ram_gb,
+        user,
+    }
 }
 
 pub fn format_sys_info(data: &SysInfoData) -> String {

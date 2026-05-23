@@ -20,9 +20,7 @@ pub fn definition() -> Tool {
 
 pub async fn call(store: &Arc<NoteStore>) -> CallToolResult {
     match store.list().await {
-        Ok(notes) if notes.is_empty() => {
-            CallToolResult::success(vec![Content::text("no notes")])
-        }
+        Ok(notes) if notes.is_empty() => CallToolResult::success(vec![Content::text("no notes")]),
         Ok(notes) => {
             let text = notes
                 .iter()

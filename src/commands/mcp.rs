@@ -1,14 +1,13 @@
 use std::sync::Arc;
 
 use rmcp::{
-    ServerHandler, ServiceExt,
+    RoleServer, ServerHandler, ServiceExt,
     model::{
         CallToolRequestParams, CallToolResult, ErrorData, ListToolsResult, PaginatedRequestParams,
         ServerCapabilities, ServerInfo, ToolsCapability,
     },
     service::RequestContext,
     transport::stdio,
-    RoleServer,
 };
 
 use crate::mcp_tools;
@@ -96,9 +95,7 @@ impl ServerHandler for McpServer {
                         })?;
                     Ok(mcp_tools::notes_search::call(&notes, &args).await)
                 }
-                mcp_tools::notes_list::NAME => {
-                    Ok(mcp_tools::notes_list::call(&notes).await)
-                }
+                mcp_tools::notes_list::NAME => Ok(mcp_tools::notes_list::call(&notes).await),
                 _ => Err(ErrorData::invalid_params("unknown tool", None)),
             }
         }

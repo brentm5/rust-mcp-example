@@ -4,10 +4,10 @@ use std::sync::Arc;
 use arrow_array::{RecordBatch, RecordBatchIterator, StringArray};
 use arrow_schema::{DataType, Field, Schema};
 use futures::TryStreamExt;
-use lancedb::index::scalar::FtsIndexBuilder;
-use lancedb::index::Index;
-use lancedb::query::{ExecutableQuery, QueryBase};
 use lancedb::Table;
+use lancedb::index::Index;
+use lancedb::index::scalar::FtsIndexBuilder;
+use lancedb::query::{ExecutableQuery, QueryBase};
 use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -27,7 +27,11 @@ pub struct Note {
 
 impl std::fmt::Display for Note {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "id:      {}\nname:    {}\nmessage: {}", self.id, self.name, self.message)
+        write!(
+            f,
+            "id:      {}\nname:    {}\nmessage: {}",
+            self.id, self.name, self.message
+        )
     }
 }
 
@@ -111,7 +115,9 @@ impl NoteStore {
         use lancedb::index::scalar::FullTextSearchQuery;
         use lancedb::table::OptimizeAction;
 
-        self.table.optimize(OptimizeAction::Index(Default::default())).await?;
+        self.table
+            .optimize(OptimizeAction::Index(Default::default()))
+            .await?;
 
         // Search `message` column, then `name` column; merge results deduplicating by id.
         let search_column = |col: &'static str| {
@@ -134,7 +140,11 @@ impl NoteStore {
 
         let mut seen_ids = std::collections::HashSet::new();
         let mut results = Vec::new();
-        for note in search_column("message").await?.into_iter().chain(search_column("name").await?) {
+        for note in search_column("message")
+            .await?
+            .into_iter()
+            .chain(search_column("name").await?)
+        {
             if seen_ids.insert(note.id.clone()) {
                 results.push(note);
             }
@@ -143,13 +153,7 @@ impl NoteStore {
     }
 
     pub async fn list(&self) -> Result<Vec<Note>> {
-        let batches: Vec<RecordBatch> = self
-            .table
-            .query()
-            .execute()
-            .await?
-            .try_collect()
-            .await?;
+        let batches: Vec<RecordBatch> = self.table.query().execute().await?.try_collect().await?;
         batches_to_notes(batches)
     }
 }
@@ -232,7 +236,10 @@ mod tests {
         rt().block_on(async {
             let dir = tempdir().unwrap();
             let store = NoteStore::open(dir.path()).await.unwrap();
-            store.save("shopping list", "buy milk and eggs").await.unwrap();
+            store
+                .save("shopping list", "buy milk and eggs")
+                .await
+                .unwrap();
             store.save("work todo", "finish the report").await.unwrap();
             let results = store.search("milk").await.unwrap();
             assert_eq!(results.len(), 1);
